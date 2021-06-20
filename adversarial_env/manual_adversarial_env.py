@@ -127,7 +127,7 @@ def main():
     print("The shortest possible path would be", env.shortest_path_length)
     print("Is the path passable?", env.passable)
 
-    settings = env.get_env_settings()
+    settings = env.get_env_configuration()
     from settable_minigrid import SettableMinigridWrapper
     from gym_minigrid.minigrid import MiniGridEnv
     env = SettableMinigridWrapper(env.size, max_steps=250)

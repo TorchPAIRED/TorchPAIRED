@@ -5,7 +5,8 @@ import gym_minigrid.minigrid as minigrid
 import networkx as nx
 from networkx import grid_graph
 import numpy as np
-
+from pfrl.envs import MultiprocessVectorEnv
+from pfrl.wrappers.vector_frame_stack import VectorEnvWrapper
 
 
 class AdversarialEnv(minigrid.MiniGridEnv):
@@ -19,6 +20,7 @@ class AdversarialEnv(minigrid.MiniGridEnv):
     self.size = size
     self.random_z_dim = random_z_dim
     self.n_clutter = n_clutter
+    self.mission = "generate an env"
 
     super().__init__(max_steps)
 
@@ -38,21 +40,26 @@ class AdversarialEnv(minigrid.MiniGridEnv):
   def get_obs(self):
     random_z = np.random.uniform(size=(self.random_z_dim,)).astype(np.float32)
     image = self.grid.encode()
+    flat_image = image[:,:,0].flatten()
 
-    obs = np.append(image[0].flatten(), random_z)
+    obs = np.append(flat_image, random_z)
+    obs = np.append(obs, self.step_count)
+
     return obs
 
   def reset(self):
+
+
     """Fully resets the environment to an empty grid with no agent or goal."""
     self.graph = grid_graph(dim=[self.size-2, self.size-2])
     self.step_count = 0
 
-    self.agent_pos = (-1,-1)  # fake, only there because otherwise printing the env breaks everything
+    self.agent_pos = (1,1)  # fake, only there because otherwise printing the env breaks everything
     self.agent_dir = 0
     self.carrying = False
 
     self.goal_pos = None
-    self.goal_pos = (-1,-1)
+    self.goal_pos = (2,2)
 
     # Generate the grid. Will be random by default, or same environment if
     # 'fixed_environment' is True.
@@ -64,8 +71,12 @@ class AdversarialEnv(minigrid.MiniGridEnv):
 
     return self.get_obs()
 
-  def get_env_settings(self):
-    return self.grid.copy(), self.agent_pos, self.agent_dir, self.goal_pos, self.carrying
+  def get_env_configuration(self):
+    encoding = self.grid.encode()
+
+    from adversarial_env.configuration import EnvConfiguration
+    conf = EnvConfiguration(encoding, self.agent_pos, self.agent_dir, self.goal_pos, self.carrying)
+    return conf
 
   def remove_wall(self, x, y):
     obj = self.grid.get(x, y)
@@ -79,6 +90,7 @@ class AdversarialEnv(minigrid.MiniGridEnv):
     agent_pos = self.agent_pos[0]-1, self.agent_pos[1]-1
     goal_pos = self.goal_pos[0]-1, self.goal_pos[1]-1
 
+    """
     from matplotlib import pyplot as plt
     plt.figure(figsize=(6, 6))
     pos = {(x, y): (y, -x) for x, y in self.graph.nodes()}
@@ -87,6 +99,7 @@ class AdversarialEnv(minigrid.MiniGridEnv):
             with_labels=True,
             node_size=600)
     plt.show()
+    """
 
     self.distance_to_goal = abs(goal_pos[0] - agent_pos[0]) \
                             + abs(goal_pos[1] - agent_pos[1])
@@ -162,7 +175,7 @@ class AdversarialEnv(minigrid.MiniGridEnv):
       # If there is already an object there, action does nothing
       if self.grid.get(x, y) is None and self.agent_pos != (x,y):
         self.put_obj(minigrid.Wall(), x, y)
-        print(f"placed wall at {x,y}")
+       # print(f"placed wall at {x,y}")
 
         # logging
         self.n_clutter_placed += 1
@@ -171,14 +184,46 @@ class AdversarialEnv(minigrid.MiniGridEnv):
     self.step_count += 1
 
     # End of episode
+    info = {}
     if self.step_count >= self.max_steps:
       done = True
       self.compute_shortest_path()
 
-    return self.get_obs(), 0, done, {}
+      info["configuration"] = self.get_env_configuration()
+
+
+    return self.get_obs(), 0, done, info
+
+class AdversarialVecWrapper(VectorEnvWrapper):
+  def __init__(self, env, pipe):
+    super().__init__(env)
+    self.reset()
+    self.pipe = pipe
+
+  def step(self, action):
+    obss, rews, dones, infos = self.env.step(action)
+
+    #all_done = True
+    #for done in dones:
+    #  if done is False: # todo this should never happen, verify that and remove
+    #    all_done = False
+    if True in dones:
+      # todo call prot & anta
+      confs = []
+      for info in infos:
+        confs.append(info["configuration"])
+      rews = self.pipe.get_rewards(confs)
+
+    #if all_done:
+    #  rews = self.agents_cb()
+
+    return obss, rews, dones, infos
+
+  def reset(self, mask=None):
+    return self.env.reset(mask)
 
 gym.envs.register(
      id='AdversarialMinigrid-v0',
-     entry_point='adversarial_env:AdversarialEnv',
+     entry_point='adversarial_env.adversarial_minigrid:AdversarialEnv',
      max_episode_steps=1000,
 )

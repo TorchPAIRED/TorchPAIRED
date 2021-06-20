@@ -1,3 +1,4 @@
 gym-minigrid
 networkx
 tensorboard
+matplotlib

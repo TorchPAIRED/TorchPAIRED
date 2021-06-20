@@ -18,7 +18,7 @@ from pfrl.nn.lmbda import Lambda
 from utils import get_squashed_diagonal_gaussian_head_fun
 
 
-def make_agent_policy(args, obs_space, action_size, action_space, train_it=True):
+def make_agent_policy(args, obs_space, action_size, action_space_low, action_space_high, train_it=True):
     squashed_diagonal_gaussian_head = get_squashed_diagonal_gaussian_head_fun(action_size)
 
     from utils import make_n_hidden_layers
