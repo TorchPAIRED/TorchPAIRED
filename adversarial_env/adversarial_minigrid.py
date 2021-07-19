@@ -21,6 +21,7 @@ class AdversarialEnv(minigrid.MiniGridEnv):
     self.random_z_dim = random_z_dim
     self.n_clutter = n_clutter
     self.mission = "generate an env"
+    self.passable = True  # gets changed later
 
     super().__init__(max_steps)
 
@@ -75,7 +76,7 @@ class AdversarialEnv(minigrid.MiniGridEnv):
     encoding = self.grid.encode()
 
     from adversarial_env.configuration import EnvConfiguration
-    conf = EnvConfiguration(encoding, self.agent_pos, self.agent_dir, self.goal_pos, self.carrying)
+    conf = EnvConfiguration(encoding, self.agent_pos, self.agent_dir, self.goal_pos, self.carrying, self.passable)
     return conf
 
   def remove_wall(self, x, y):
@@ -195,27 +196,12 @@ class AdversarialEnv(minigrid.MiniGridEnv):
     return self.get_obs(), 0, done, info
 
 class AdversarialVecWrapper(VectorEnvWrapper):
-  def __init__(self, env, pipe):
+  def __init__(self, env):
     super().__init__(env)
     self.reset()
-    self.pipe = pipe
 
   def step(self, action):
     obss, rews, dones, infos = self.env.step(action)
-
-    #all_done = True
-    #for done in dones:
-    #  if done is False: # todo this should never happen, verify that and remove
-    #    all_done = False
-    if True in dones:
-      # todo call prot & anta
-      confs = []
-      for info in infos:
-        confs.append(info["configuration"])
-      rews = self.pipe.get_rewards(confs)
-
-    #if all_done:
-    #  rews = self.agents_cb()
 
     return obss, rews, dones, infos
 

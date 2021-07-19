@@ -1,3 +1,6 @@
+import random
+import time
+
 from torch import nn
 import torch
 from torch import distributions, nn
@@ -23,3 +26,13 @@ def get_squashed_diagonal_gaussian_head_fun(action_size):
             base_distribution, [distributions.transforms.TanhTransform(cache_size=1)]
         )
     return squashed_diagonal_gaussian_head
+
+import contextlib
+
+@contextlib.contextmanager
+def timer(name, also=False):
+    start = time.time()
+    yield
+    x = random.randint(0,128)
+    if x == 1:
+        print(name, time.time() - start, f"also: {also}" if also else "")

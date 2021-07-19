@@ -62,7 +62,8 @@ def make_agent_policy(args, obs_space, action_size, action_space_low, action_spa
         return np.random.uniform(action_space_low, action_space_high).astype(np.float32)
 
     # Hyperparameters in http://arxiv.org/abs/1802.09477
-    agent = pfrl.agents.SoftActorCritic(
+    from custom_pfrl.sac import SoftActorCritic
+    agent = SoftActorCritic(
         policy,
         q_func1,
         q_func2,

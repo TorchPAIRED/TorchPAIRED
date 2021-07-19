@@ -16,11 +16,9 @@ import pfrl
 #from diayn.discriminator import Discriminator
 #from diayn.vecwrapper import DIAYNWrapper
 from args import get_args
+from custom_pfrl.train_agent_batch import train_paired
 from pfrl import experiments, replay_buffers, utils
 from pfrl.nn.lmbda import Lambda
-
-#from utils import make_n_hidden_layers
-from pipe import AdvPipe
 
 
 def make_env(args, seed, test, augment_with_z=False):
@@ -61,7 +59,7 @@ def make_env(args, seed, test, augment_with_z=False):
     return env
 
 
-def adv_train(args, pipe):
+def adv_train(args, ant_agent, ant_env, pro_agent, pro_env):
     args = argparse.Namespace(**vars(args))
     args.env = args.env[0]
     args.outdir = args.outdir+"/adv"
@@ -83,7 +81,7 @@ def adv_train(args, pipe):
         )
 
         from adversarial_env.adversarial_minigrid import AdversarialVecWrapper
-        env = AdversarialVecWrapper(env, pipe)
+        env = AdversarialVecWrapper(env)
 
         """
         if args.diayn_use and force_no_diayn is not True:
@@ -122,25 +120,18 @@ def adv_train(args, pipe):
     #if len(args.load) > 0: fixme
     #    agent.load(args.load)
 
-    # jank!
-    import threading
-
     from agent import make_agent_policy
 
-    experiments.train_agent_batch_with_evaluation(
-        agent=make_agent_policy(args, obs_space, action_size, action_space_low, action_space_high, train_it=True),
-        env=make_batch_env(test=False),
-        eval_env=make_batch_env(test=True),
+
+    train_paired(
+        adv_agent=make_agent_policy(args, obs_space, action_size, action_space_low, action_space_high, train_it=True),
+        adv_env=make_batch_env(test=False),
+        ant_agent=ant_agent,
+        ant_env=ant_env,
+        pro_agent=pro_agent,
+        pro_env=pro_env,
         outdir=args.outdir,
         steps=args.steps,
-        eval_n_steps=None,
-        eval_n_episodes=args.eval_n_runs,
-        eval_interval=args.eval_interval,
         log_interval=args.log_interval,
         max_episode_len=timestep_limit,
-        use_tensorboard=True
     )
-
-
-if __name__ == "__main__":
-    adv_train(get_args(), AdvPipe())

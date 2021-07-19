@@ -22,23 +22,13 @@ from gonist_training import gon_train
 from pfrl import experiments, replay_buffers, utils
 from pfrl.nn.lmbda import Lambda
 
-#from utils import make_n_hidden_layers
-from pipe import AdvPipe
-
 
 def main():
     args = get_args()
-    pipe = AdvPipe()
 
-    protag_thread = threading.Thread(target=gon_train, args=[args, pipe, True])
-    antag_thread = threading.Thread(target=gon_train, args=[args, pipe, False])
-
-    protag_thread.start()
-    antag_thread.start()
-
-    adv_thread = threading.Thread(target=adv_train, args=[args, pipe])
-    adv_thread.start()
-
+    ant_agent, ant_env = gon_train(args, False)
+    pro_agent, pro_env = gon_train(args, True)
+    adv_train(args, ant_agent, ant_env, pro_agent, pro_env)
 
 if __name__ == "__main__":
     main()

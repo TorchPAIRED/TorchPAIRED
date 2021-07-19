@@ -72,7 +72,7 @@ def get_args():
         "--demo", action="store_true", help="Just run evaluation, not training."
     )
     parser.add_argument(
-        "--monitor", action="store_true", default=True, help="Wrap env with Monitor to write videos."
+        "--monitor", action="store_true", default=False, help="Wrap env with Monitor to write videos."
     )
     parser.add_argument(
         "--log-interval",

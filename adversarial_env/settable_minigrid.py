@@ -13,6 +13,7 @@ class SettableMinigrid(gym_minigrid.minigrid.MiniGridEnv):
         self.set_goal_pos = (1, 1)
         self.set_carrying = False
         self.mission = 'reach the goal'
+        self.passable = True
 
         self.paired_done = False
 
@@ -29,6 +30,7 @@ class SettableMinigrid(gym_minigrid.minigrid.MiniGridEnv):
         self.set_agent_dir = agent_dir
         self.set_goal_pos = goal_pos
         self.set_carrying = carrying
+        self.passable = configuration.get_passable()
 
         return self.reset()
 
@@ -47,6 +49,7 @@ class SettableMinigrid(gym_minigrid.minigrid.MiniGridEnv):
         obs, rew, done, info = super().step(action)
         if done:
             self.paired_done = True
+
         return obs, rew, done, info
 
     def _gen_grid(self, _w, _h):
@@ -60,9 +63,8 @@ class SettableMinigrid(gym_minigrid.minigrid.MiniGridEnv):
 
 from pfrl.wrappers.vector_frame_stack import VectorEnvWrapper
 class SettableVecWrapper(VectorEnvWrapper):
-    def __init__(self, env, pipe, initial_configuration, for_protag):
+    def __init__(self, env, initial_configuration, for_protag):
         super().__init__(env, )
-        self.pipe = pipe
         self.num_envs = env.num_envs
 
         self.reset_counter = np.zeros((self.num_envs,))
@@ -87,10 +89,12 @@ class SettableVecWrapper(VectorEnvWrapper):
 
         self.n_steps_without_set += 1
         #print(self.n_steps_without_set)
+
+
         return obss, rews, dones, infos
 
     def reset(self, mask=None):
-
+        """
         if np.count_nonzero(self.reset_counter) == self.num_envs:
             self.reset_counter = np.zeros((self.num_envs,))
             configurations = self.pipe.get_configuration(from_protag=self.for_protag, reward=self.rewards)
@@ -99,7 +103,7 @@ class SettableVecWrapper(VectorEnvWrapper):
 
 
         elif mask is not None:
-            self.reset_counter[np.logical_not(mask)] += 1
+            self.reset_counter[np.logical_not(mask)] += 1"""
 
         return self.env.reset(mask)
 

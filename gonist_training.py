@@ -20,7 +20,6 @@ from pfrl import experiments, replay_buffers, utils
 from pfrl.nn.lmbda import Lambda
 
 #from utils import make_n_hidden_layers
-from pipe import AdvPipe
 
 
 def make_env(args, seed, test, augment_with_z=False):
@@ -65,7 +64,7 @@ def make_env(args, seed, test, augment_with_z=False):
     return env
 
 
-def gon_train(args, pipe, is_protag):
+def gon_train(args, is_protag):
     args = argparse.Namespace(**vars(args))
     args.env = args.env[1]
     args.outdir = args.outdir + ("/pro" if is_protag else "/ant")
@@ -88,7 +87,7 @@ def gon_train(args, pipe, is_protag):
 
         from adversarial_env.adversarial_minigrid import AdversarialVecWrapper
         from adversarial_env.settable_minigrid import SettableVecWrapper
-        env = SettableVecWrapper(env, pipe, initial_configuration, for_protag=is_protag)
+        env = SettableVecWrapper(env, initial_configuration, for_protag=is_protag)
 
         """
         if args.diayn_use and force_no_diayn is not True:
@@ -134,27 +133,7 @@ def gon_train(args, pipe, is_protag):
     import threading
 
     from agent import make_agent_policy
+    agent = make_agent_policy(args, obs_space, action_size, action_space_low, action_space_high)
+    env = make_batch_env(test=False, initial_configuration=[conf]*args.num_envs)
 
-    if is_protag:
-        pipe.pro_lock.acquire()
-    else:
-        pipe.ant_lock.acquire()
-    configurations = pipe.unsafe_get_configuration()
-
-    experiments.train_agent_batch_with_evaluation(
-        agent=make_agent_policy(args, obs_space, action_size, action_space_low, action_space_high, train_it=True),
-        env=make_batch_env(test=False, initial_configuration=configurations),
-        eval_env=make_batch_env(test=True, initial_configuration=configurations),
-        outdir=args.outdir,
-        steps=args.steps,
-        eval_n_steps=None,
-        eval_n_episodes=args.eval_n_runs,
-        eval_interval=args.eval_interval,
-        log_interval=args.log_interval,
-        max_episode_len=timestep_limit,
-        use_tensorboard=True
-    )
-
-
-if __name__ == "__main__":
-    gon_train(get_args(), AdvPipe(), True)
+    return agent, env
