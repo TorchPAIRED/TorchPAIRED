@@ -17,17 +17,48 @@ class FlatsliceWrapper(gym.ObservationWrapper):
     def observation(self, observation):
         return np.append(observation["image"][:,:,0].flatten(), observation["direction"])
 
-class DiscreteToBoxActionSpace(gym.Wrapper):
+class DiscreteToBoxActionSpace(gym.ActionWrapper):
     def __init__(self, env):
         super().__init__(env)
+        self.did_conversion = False
         if isinstance(env.action_space, gym.spaces.Discrete):
-            self.action_space = gym.spaces.Box(low=0, high=env.action_space.n, shape=(1,))
-
+            size = env.action_space.n
+            self.original_size = size
+            self.did_conversion = True
+            self.action_space = gym.spaces.Box(0, size, shape=(1,))
         assert isinstance(self.action_space, gym.spaces.Box)
+
+    def action(self, action):
+        from adversarial_env.configuration import EnvConfiguration
+        if isinstance(action, EnvConfiguration):
+            return action  # jank for settable env...
+
+        if not self.did_conversion:
+            return action
+
+        if action == self.original_size:
+            return action-1
+
+        from math import floor
+        action = floor(action)
+        return action
+
+class WalkingMinigrid(gym.ActionWrapper):
+    # prevent thinking time being spent on NOOPs
+
+    def __init__(self, env):
+        super().__init__(env)
+        from gym_minigrid.minigrid import MiniGridEnv
+        assert isinstance(env, MiniGridEnv)
+        assert isinstance(env.action_space, gym.spaces.Discrete)
+        self.action_space = gym.spaces.Discrete(3)
+
+    def action(self, action):
+        return action
 
 
 class NormalizeActionSpace(gym.ActionWrapper):
-    """Normalize a Box action space to [-1, 1]^n."""
+    #"Normalize a Box action space to [-1, 1]^n."
 
     def __init__(self, env):
         super().__init__(env)

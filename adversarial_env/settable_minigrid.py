@@ -14,6 +14,7 @@ class SettableMinigrid(gym_minigrid.minigrid.MiniGridEnv):
         self.set_carrying = False
         self.mission = 'reach the goal'
         self.passable = True
+        self.env_name = "generic"
 
         self.paired_done = False
 
@@ -35,7 +36,7 @@ class SettableMinigrid(gym_minigrid.minigrid.MiniGridEnv):
         return self.reset()
 
     def step(self, action):
-        try:
+        try:    # jank, but can only call standard functions from outside the process. So we're overloading step
             obs = self.set(action)
             return obs, 0, False, {}
         except Exception as e:
@@ -43,7 +44,7 @@ class SettableMinigrid(gym_minigrid.minigrid.MiniGridEnv):
             pass
 
         ##print(action)
-        action = int(action[0])
+        action = int(action)
         #print(action)
 
         obs, rew, done, info = super().step(action)

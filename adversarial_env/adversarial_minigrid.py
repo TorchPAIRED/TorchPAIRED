@@ -76,7 +76,7 @@ class AdversarialEnv(minigrid.MiniGridEnv):
     encoding = self.grid.encode()
 
     from adversarial_env.configuration import EnvConfiguration
-    conf = EnvConfiguration(encoding, self.agent_pos, self.agent_dir, self.goal_pos, self.carrying, self.passable)
+    conf = EnvConfiguration(encoding, self.agent_pos, self.agent_dir, self.goal_pos, self.carrying, self.passable, self.size)
     return conf
 
   def remove_wall(self, x, y):

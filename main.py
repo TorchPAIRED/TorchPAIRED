@@ -26,9 +26,9 @@ from pfrl.nn.lmbda import Lambda
 def main():
     args = get_args()
 
-    ant_agent, ant_env = gon_train(args, False)
-    pro_agent, pro_env = gon_train(args, True)
-    adv_train(args, ant_agent, ant_env, pro_agent, pro_env)
+    ant_trainer = gon_train(args, False)
+    pro_trainer = gon_train(args, True)
+    adv_train(args, ant_trainer, pro_trainer)
 
 if __name__ == "__main__":
     main()

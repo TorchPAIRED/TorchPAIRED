@@ -59,7 +59,7 @@ def make_env(args, seed, test, augment_with_z=False):
     return env
 
 
-def adv_train(args, ant_agent, ant_env, pro_agent, pro_env):
+def adv_train(args, ant_trainer, pro_trainer):
     args = argparse.Namespace(**vars(args))
     args.env = args.env[0]
     args.outdir = args.outdir+"/adv"
@@ -126,10 +126,8 @@ def adv_train(args, ant_agent, ant_env, pro_agent, pro_env):
     train_paired(
         adv_agent=make_agent_policy(args, obs_space, action_size, action_space_low, action_space_high, train_it=True),
         adv_env=make_batch_env(test=False),
-        ant_agent=ant_agent,
-        ant_env=ant_env,
-        pro_agent=pro_agent,
-        pro_env=pro_env,
+        ant_trainer=ant_trainer,
+        pro_trainer=pro_trainer,
         outdir=args.outdir,
         steps=args.steps,
         log_interval=args.log_interval,
