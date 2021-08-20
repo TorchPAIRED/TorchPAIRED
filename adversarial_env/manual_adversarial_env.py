@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from absl import logging
 
-from adversarial_minigrid import AdversarialEnv
+from adversarial_minigrid import MinigridAdversarialEnv
 
 
 def get_user_input_agent(env):
@@ -93,7 +93,7 @@ def get_user_input_environment(env):
 
 
 def main():
-    env = AdversarialEnv(15)
+    env = MinigridAdversarialEnv(15)
     obs = env.reset()
 
     print('You are playing the role of the adversary to place blocks in '

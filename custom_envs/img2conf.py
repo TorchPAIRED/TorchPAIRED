@@ -5,7 +5,7 @@ from PIL import Image
 import glob
 import numpy as np
 
-from adversarial_env.adversarial_minigrid import AdversarialEnv
+from adversarial_env.adversarial_minigrid import MinigridAdversarialEnv
 
 DEBUG = False
 def print_debug(*str):
@@ -44,7 +44,7 @@ for filename in glob.glob(f'{parser.input_dir}/*.png'):
 
     # create adv env step list. Order is: Goal, Agent, Wall, Wall ...
     step_list = [goal_locs[0], agent_locs[0]] + wall_locs.tolist()
-    env = AdversarialEnv(size=arr.shape[0]+2)   # +2 because outer wall
+    env = MinigridAdversarialEnv(size=arr.shape[0] + 2)   # +2 because outer wall
     env.reset()
     for step in step_list:
         env.step(step)

@@ -9,7 +9,7 @@ from pfrl.envs import MultiprocessVectorEnv
 from pfrl.wrappers.vector_frame_stack import VectorEnvWrapper
 
 
-class AdversarialEnv(minigrid.MiniGridEnv):
+class MinigridAdversarialEnv(minigrid.MiniGridEnv):
   """Grid world where an adversary build the environment the agent plays.
   The adversary places the goal, agent, and up to n_clutter blocks in sequence.
   The action dimension is the number of squares in the grid, and each action

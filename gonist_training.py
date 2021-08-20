@@ -118,8 +118,8 @@ def gon_train(args, is_protag):
             hidden_layers=args.n_hidden_layers,
             n_skills=args.diayn_n_skills
         ).cuda()"""
-    from adversarial_env.adversarial_minigrid import AdversarialEnv
-    initial_confuguration = AdversarialEnv(size=10).get_env_configuration()
+    from adversarial_env.adversarial_minigrid import MinigridAdversarialEnv
+    initial_confuguration = MinigridAdversarialEnv(size=10).get_env_configuration()
     #make_env(args, 0, False, augment_with_z=False).step(conf)
 
     sample_env = make_batch_env(args, [initial_confuguration]*args.num_envs)#, discriminator=discriminator)
