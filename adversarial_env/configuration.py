@@ -5,7 +5,7 @@ class EnvConfiguration:
 
         #print(f"Is passable? {self.passable}")
     def get_configuration(self):
-        return self.encoding, self.agent_pos, self.agent_dir, self.goal_pos, self.carrying
+        return self.encoding.copy(), self.agent_pos, self.agent_dir, self.goal_pos, self.carrying
 
     def get_passable(self):
         return self.passable

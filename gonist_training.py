@@ -298,6 +298,8 @@ class AgentTrainer:
                     if self.best_eval_scores[env_name] < eval_returns["mean"]:
                         print(f"best score for {env_name} updated: {self.best_eval_scores[env_name]} ---> {eval_returns['mean']}")
                         self.best_eval_scores[env_name] = eval_returns["mean"]
+                    else:
+                        print(f"best score for {env_name}: {self.best_eval_scores[env_name]}")
 
 
         if (
